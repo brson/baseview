@@ -24,6 +24,6 @@ pub struct WindowOpenOptions {
 
     /// If provided, then an OpenGL context will be created for this window. You'll be able to
     /// access this context through [crate::Window::gl_context].
-    #[cfg(feature = "opengl")]
+    #[cfg(any(feature = "opengl", feature = "egl"))]
     pub gl_config: Option<crate::gl::GlConfig>,
 }

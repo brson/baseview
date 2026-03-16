@@ -24,7 +24,7 @@ use crate::{
     WindowScalePolicy,
 };
 
-#[cfg(feature = "opengl")]
+#[cfg(any(feature = "opengl", feature = "egl"))]
 use crate::gl::{platform, GlContext};
 use crate::x11::event_loop::EventLoop;
 use crate::x11::visual_info::WindowVisualConfig;
@@ -93,7 +93,7 @@ impl Drop for ParentHandle {
 
 pub(crate) struct WindowInner {
     // GlContext should be dropped **before** XcbConnection is dropped
-    #[cfg(feature = "opengl")]
+    #[cfg(any(feature = "opengl", feature = "egl"))]
     gl_context: Option<GlContext>,
 
     pub(crate) xcb_connection: XcbConnection,
@@ -194,11 +194,11 @@ impl<'a> Window<'a> {
 
         let window_info = WindowInfo::from_logical_size(options.size, scaling);
 
-        #[cfg(feature = "opengl")]
+        #[cfg(any(feature = "opengl", feature = "egl"))]
         let visual_info =
             WindowVisualConfig::find_best_visual_config_for_gl(&xcb_connection, options.gl_config)?;
 
-        #[cfg(not(feature = "opengl"))]
+        #[cfg(not(any(feature = "opengl", feature = "egl")))]
         let visual_info = WindowVisualConfig::find_best_visual_config(&xcb_connection)?;
 
         let window_id = xcb_connection.conn.generate_id()?;
@@ -255,14 +255,13 @@ impl<'a> Window<'a> {
         // TODO: These APIs could use a couple tweaks now that everything is internal and there is
         //       no error handling anymore at this point. Everything is more or less unchanged
         //       compared to when raw-gl-context was a separate crate.
-        #[cfg(feature = "opengl")]
+        #[cfg(any(feature = "opengl", feature = "egl"))]
         let gl_context = visual_info.fb_config.map(|fb_config| {
             use std::ffi::c_ulong;
 
             let window = window_id as c_ulong;
             let display = xcb_connection.dpy;
 
-            // Because of the visual negotation we had to take some extra steps to create this context
             let context = unsafe { platform::GlContext::create(window, display, fb_config) }
                 .expect("Could not create OpenGL context");
             GlContext::new(context)
@@ -277,7 +276,7 @@ impl<'a> Window<'a> {
 
             close_requested: Cell::new(false),
 
-            #[cfg(feature = "opengl")]
+            #[cfg(any(feature = "opengl", feature = "egl"))]
             gl_context,
         };
 
@@ -342,7 +341,7 @@ impl<'a> Window<'a> {
         // and notify the window handler about it
     }
 
-    #[cfg(feature = "opengl")]
+    #[cfg(any(feature = "opengl", feature = "egl"))]
     pub fn gl_context(&self) -> Option<&crate::gl::GlContext> {
         self.inner.gl_context.as_ref()
     }

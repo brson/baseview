@@ -112,7 +112,7 @@ impl<'a> Window<'a> {
 
     /// If provided, then an OpenGL context will be created for this window. You'll be able to
     /// access this context through [crate::Window::gl_context].
-    #[cfg(feature = "opengl")]
+    #[cfg(any(feature = "opengl", feature = "egl"))]
     pub fn gl_context(&self) -> Option<&crate::gl::GlContext> {
         self.window.gl_context()
     }

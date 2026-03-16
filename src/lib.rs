@@ -13,7 +13,7 @@ mod window;
 mod window_info;
 mod window_open_options;
 
-#[cfg(feature = "opengl")]
+#[cfg(any(feature = "opengl", feature = "egl"))]
 pub mod gl;
 
 pub use clipboard::*;

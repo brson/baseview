@@ -10,10 +10,15 @@ mod win;
 #[cfg(target_os = "windows")]
 use win as platform;
 
-// We need to use this directly within the X11 window creation to negotiate the correct visual
-#[cfg(target_os = "linux")]
+// Linux: use EGL if the `egl` feature is enabled, otherwise GLX.
+#[cfg(all(target_os = "linux", feature = "egl"))]
+pub(crate) mod egl_x11;
+#[cfg(all(target_os = "linux", feature = "egl"))]
+pub(crate) use self::egl_x11 as platform;
+
+#[cfg(all(target_os = "linux", not(feature = "egl")))]
 pub(crate) mod x11;
-#[cfg(target_os = "linux")]
+#[cfg(all(target_os = "linux", not(feature = "egl")))]
 pub(crate) use self::x11 as platform;
 
 #[cfg(target_os = "macos")]
